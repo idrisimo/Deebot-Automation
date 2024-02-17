@@ -29,10 +29,11 @@ class EcoVacsControl {
             await this.api.connect(this.account_id, this.password_hash);
             console.log("-------------------Begin Control-------------------")
             const devices = await this.api.devices();
-            console.log("Devices:", JSON.stringify(devices, null, 2));
+            // console.log("Devices:", JSON.stringify(devices, null, 2));
             const vacuum = devices[this.deviceID];
             this.vacbot = this.api.getVacBot(this.api.uid, EcoVacsAPI.REALM, this.api.resource, this.api.user_access_token, vacuum, this.continent);
             this.setupListeners();
+            // this.cleanHouse()
             this.vacbot.connect();
         } catch (error) {
             console.error("Failure in connecting!");
@@ -40,6 +41,11 @@ class EcoVacsControl {
         }
     }
     async cleanHouse() {
+        console.log('test1')
+        // await this.connectAndControl().then(()=>{
+        //     console.log('test2')
+        //     
+        // });
         console.log("Cleaning House")
         // this.vacbot.clean();
     }
@@ -86,16 +92,16 @@ class EcoVacsControl {
             this.vacbot.run("GetCleanState");
             this.vacbot.run("GetChargeState");
             this.vacbot.on("BatteryInfo", (battery) => {
-                console.log("Battery level: " + Math.round(battery));
+                // console.log("Battery level: " + Math.round(battery));
             });
             this.vacbot.on('CleanReport', (value) => {
-                console.log("Clean status: " + value);
+                // console.log("Clean status: " + value);
             });
             this.vacbot.on('ChargeState', (value) => {
-                console.log("Charge status: " + value);
+                // console.log("Charge status: " + value);
             });
             
-            console.log("---Vac Bot map---");
+            // console.log("---Vac Bot map---");
             this.vacbot.run("GetMaps", true);
             this.vacbot.on('MapDataObject', (mapDataObject) => {
                 this.mapSpotAreaDetailsPopulated = true;
@@ -108,7 +114,7 @@ class EcoVacsControl {
                     this.mapSpotAreaDetails[roomName] = [roomName,roomId];
                     this.roomsList.push(roomName);
                 }
-                console.log(this.mapSpotAreaDetails)
+                // console.log(this.mapSpotAreaDetails)
                 this.initGetPosition();
             });
             this.vacbot.on('Error', (value) => {

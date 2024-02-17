@@ -1,45 +1,49 @@
-const EcoVacsControl = require('./EcoVacsControl');
+const EcoVacsControl = require('../../EcoVacsControl');
 
 exports.handler = async (event, context) => {
     const ecoVacsControl = new EcoVacsControl();
-    await ecoVacsControl.connectAndControl();
-
+    ecoVacsControl.connectAndControl()
     // Determine action based on endpoint
     let action;
+    const url = '/.netlify/functions/netlifyFunctions'
     switch (event.path) {
-        case '/clean/house':
+        case url.concat("",'/clean/house'):
             action = ecoVacsControl.cleanHouse();
             break;
         
-        case '/control/stop-and-go-home':
+        case url.concat("",'/control/stop-and-go-home'):
             action = ecoVacsControl.stopAndGoHome();
             break;
-        case '/control/pause-clean':
+        case url.concat("",'/control/pause-clean'):
             action = ecoVacsControl.pauseClean();
             break;
-        case '/control/resume-clean':
+        case url.concat("",'/control/resume-clean'):
             action = ecoVacsControl.resumeClean();
             break;
-        default:
-            const roomNames = [
-                'Dining room', 
-                'Study', 
-                'Living room', 
-                'Corridor', 
-                'Bedroom', 
-                'Bathroom'
-            ];
-            if (event.path.startsWith('/clean/')) {
-                const roomName = event.path.split('/').pop(); // Extract room name from endpoint
-                if(roomNames.includes(roomName)){
-                    action = ecoVacsControl.cleanRoom(roomName);
-                } else {
-                    return {
-                        statusCode: 404,
-                        body: JSON.stringify({ error: 'Endpoint not found' })
-                    };
+            default:
+                const roomNames = {
+                    'dining-room': 'Dining room', 
+                    'study': 'Study', 
+                    'living-room': 'Living room', 
+                    'corridor': 'Corridor', 
+                    'bedroom': 'Bedroom', 
+                    'bathroom': 'Bathroom'
+                };
+            
+                if (event.path.includes('/clean/')) {
+                    const roomName = event.path.split('/').pop(); // Extract room name from endpoint
+                    console.log(roomName);
+            
+                    if (roomName in roomNames) {
+                        action = ecoVacsControl.cleanRoom(roomNames[roomName]);
+                    } else {
+                        return {
+                            statusCode: 404,
+                            body: JSON.stringify({ error: 'Endpoint not found' })
+                        };
+                    }
                 }
-            } 
+                break;            
     }
 
     try {
