@@ -19,6 +19,9 @@ class EcoVacsControl {
         this.mapSpotAreaDetails = {};
         this.vacbot = null;
         this.mapSpotAreaDetailsPopulated = false;
+        this.counter = 0;
+        this.maxRetries = 10
+        this.roomsList = []
     }
 
     async connectAndControl() {
@@ -26,7 +29,7 @@ class EcoVacsControl {
             await this.api.connect(this.account_id, this.password_hash);
             console.log("-------------------Begin Control-------------------")
             const devices = await this.api.devices();
-            // console.log("Devices:", JSON.stringify(devices, null, 2));
+            console.log("Devices:", JSON.stringify(devices, null, 2));
             const vacuum = devices[this.deviceID];
             this.vacbot = this.api.getVacBot(this.api.uid, EcoVacsAPI.REALM, this.api.resource, this.api.user_access_token, vacuum, this.continent);
             this.setupListeners();
@@ -36,23 +39,44 @@ class EcoVacsControl {
             console.log(error);
         }
     }
+    async cleanHouse() {
+        console.log("Cleaning House")
+        // this.vacbot.clean();
+    }
     async cleanRoom(roomName) {
-        if (!this.mapSpotAreaDetailsPopulated) {
-            console.log("mapSpotAreaName not populated yet. Waiting...");
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-            return this.cleanRoom(roomName); // Retry after waiting
+        while (!this.mapSpotAreaDetailsPopulated && this.counter < this.maxRetries) {
+            console.log("mapSpotAreaDetails not populated yet. Waiting...");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.counter += 1;
+        }
+        if (this.counter === this.maxRetries) {
+            console.log("Timeout: Unable to populate mapSpotAreaDetails.");
+            return;
+        } else if (this.mapSpotAreaDetailsPopulated) {
+            console.log("mapSpotAreaDetails populated.");
         }
         const selectedRoomName = this.mapSpotAreaDetails[roomName][0];
         const selectedRoomId = this.mapSpotAreaDetails[roomName][1];
         if (selectedRoomName !== undefined) {
             console.log(`Cleaning room: ${selectedRoomName}`);
-            // Call vacuum action here
+            // this.vacbot.spotArea(selectedRoomId);
         } else {
-            console.log(`Room with index ${selectedRoomId} does not exist.`);
+            console.log(`Room  ${selectedRoomName} does not exist.`);
         }
     }
-    async stopClean() {
-        // TODO
+    async stopAndGoHome() {
+        console.log("Stopping");
+        // this.vacbot.stop();
+        console.log("Returning to dock");
+        // this.vacbot.charge();
+    }
+    async pauseClean() {
+        console.log("Pausing");
+        // this.vacbot.pause();
+    }
+    async resumeClean() {
+        console.log("Resuming");
+        // this.vacbot.resume();
     }
 
     setupListeners() {
@@ -62,30 +86,29 @@ class EcoVacsControl {
             this.vacbot.run("GetCleanState");
             this.vacbot.run("GetChargeState");
             this.vacbot.on("BatteryInfo", (battery) => {
-                // console.log("Battery level: " + Math.round(battery));
+                console.log("Battery level: " + Math.round(battery));
             });
             this.vacbot.on('CleanReport', (value) => {
-                // console.log("Clean status: " + value);
+                console.log("Clean status: " + value);
             });
             this.vacbot.on('ChargeState', (value) => {
-                // console.log("Charge status: " + value);
+                console.log("Charge status: " + value);
             });
             
             console.log("---Vac Bot map---");
             this.vacbot.run("GetMaps", true);
             this.vacbot.on('MapDataObject', (mapDataObject) => {
-                this.mapSpotAreaNamePopulated = true;
-                // this.api.logEvent('MapDataObject', mapDataObject);
+                this.mapSpotAreaDetailsPopulated = true;
                 this.mapData = Object.assign(mapDataObject[0]);
                 
                 for (let i = 0; i < this.mapData.mapSpotAreas.length; i++) {
                     const mapSpotArea = this.mapData.mapSpotAreas[i];
-                    let roomAreaName = mapSpotArea.mapSpotAreaName;
-                    let areaId = parseInt(mapSpotArea.mapSpotAreaID);
-                    this.mapSpotAreaDetails[roomAreaName] = [roomAreaName,areaId]
-
-                    
+                    let roomName = mapSpotArea.mapSpotAreaName;
+                    let roomId = parseInt(mapSpotArea.mapSpotAreaID);
+                    this.mapSpotAreaDetails[roomName] = [roomName,roomId];
+                    this.roomsList.push(roomName);
                 }
+                console.log(this.mapSpotAreaDetails)
                 this.initGetPosition();
             });
             this.vacbot.on('Error', (value) => {
