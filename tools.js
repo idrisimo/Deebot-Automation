@@ -7,7 +7,7 @@
 //     } catch (e) {
 //         return false;
 //     }
-}
+// }
 
 function getSettingsFile() {
     // if (isExternSettingsFileAvailable()) {
