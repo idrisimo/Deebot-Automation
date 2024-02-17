@@ -1,18 +1,18 @@
 'use strict';
 
-function isExternSettingsFileAvailable() {
-    try {
-        require.resolve('./../../deebotExampleSettings');
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
+// function isExternSettingsFileAvailable() {
+//     try {
+//         require.resolve('./../../deebotExampleSettings');
+//         return true;
+//     } catch (e) {
+//         return false;
+//     }
+// }
 
 function getSettingsFile() {
-    if (isExternSettingsFileAvailable()) {
-        return require('./../../deebotExampleSettings');
-    }
+    // if (isExternSettingsFileAvailable()) {
+    //     return require('./../../deebotExampleSettings');
+    // }
     return require('./settings');
 }
 
