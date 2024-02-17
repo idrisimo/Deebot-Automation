@@ -1,4 +1,4 @@
-const EcoVacsControl = require('../../node_modules/EcoVacsControl');
+const EcoVacsControl = require('./EcoVacsControl');
 
 exports.handler = async (event, context) => {
     const ecoVacsControl = new EcoVacsControl();
