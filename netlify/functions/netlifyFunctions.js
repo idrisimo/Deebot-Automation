@@ -2,7 +2,7 @@ const EcoVacsControl = require('../../EcoVacsControl');
 
 exports.handler = async (event, context) => {
     const ecoVacsControl = new EcoVacsControl();
-    ecoVacsControl.connectAndControl()
+    await ecoVacsControl.connectAndControl()
     // Determine action based on endpoint
     let action;
     const url = '/.netlify/functions/netlifyFunctions'

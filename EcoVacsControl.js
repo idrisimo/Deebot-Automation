@@ -42,10 +42,6 @@ class EcoVacsControl {
     }
     async cleanHouse() {
         console.log('test1')
-        // await this.connectAndControl().then(()=>{
-        //     console.log('test2')
-        //     
-        // });
         console.log("Cleaning House")
         // this.vacbot.clean();
     }
